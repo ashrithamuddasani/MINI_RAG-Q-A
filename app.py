@@ -24,11 +24,11 @@ if st.button("➕ Add Document"):
         st.warning("please enter some text.")
     else:
         chunks=[document[i:i+500] 
-                for i in range(0,len(document),500)]
+            for i in range(0,len(document),500)]
 
         embeddings=embedding_model.encode(chunks)
 
-        collection.add(ids=[f"chunk_{i}" for i in range(len(chunks))],documents=chunks,embeddings=embedding.tolist())
+        collection.add(ids=[f"chunk_{i}" for i in range(len(chunks))],documents=chunks,embeddings=embeddings.tolist())
         
 
         st.success(f"Added {len(chunks)} chunk(s) to ChromaDB.")
@@ -46,25 +46,25 @@ if st.button("🔍Ask AI"):
         results=collection.query(query_embeddings=[question_embedding.tolist()],n_results=min(3,collection.count()))
 
         retrieved_chunks=results["documents"][0]
-        context="\n\n".join(retrieved_chunks)
+        content="\n\n".join(retrieved_chunks)
         
         prompt=f"""
 
 You are a helpful AI assistant.
 Answer the question ONLY using the context below.
 
-contect:{context}
+contect:{content}
 Question:{question}
 
 If the answer is not present in the context,say "I dont know based on the provided document."
 """
 
         try:
-            response=ollama.chat(model="llama3.2",messages=[{"role":"user","context":prompt}])
+            response=ollama.chat(model="llama3.2",messages=[{"role":"user","content":prompt}])
 
             st.subheader("🤖Answer")
-            st.srite(response["message"]["context"])
-            with st.expander("🔍Retrived context"):
+            st.write(response["message"]["content"])
+            with st.expander("🔍Retrived content"):
                 for i,chunk in enumerate(retrieved_chunks):
                     st.write(f"**chunk {i+1}:**")
                     st.write(chunk)
